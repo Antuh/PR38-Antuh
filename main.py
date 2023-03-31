@@ -1,27 +1,47 @@
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.config import Config
+from kivymd.uix.screen import MDScreen
+from kivy.core.window import Window
+from kivy.uix.image import Image
+from kivymd.uix.list import OneLineAvatarListItem, ImageLeftWidget
 import time
 
-Config.set('graphics', 'Resizable', '0')
-Config.set('graphics', 'width', '360')
-Config.set('graphics', 'height', '750')
+Window.size = (360, 800)
 
 
-class CameraClick(BoxLayout):
-    def capture(self):
-        camera = self.ids['camera']
-        timestr = time.strftime("%Y%m%d_%H%M%S")
-        camera.export_to_png("IMG_" + timestr + ".png")
-        print("Captured")
+class Homescreen(MDScreen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+        self.mycamera = self.ids.camera
+        self.myimage = Image()
+        self.resultbox = self.ids.resultbox
+        self.mybox = self.ids.mybox
 
-class TestCamera(App):
+    def captureyouface(self):
+
+        timenow = time.strftime("%Y%m%d_%H%M%S")
+        self.mycamera.export_to_png("image_{}.png".format(timenow))
+        self.myimage.source = "image_{}.png".format(timenow)
+        self.resultbox.add_widget(
+            OneLineAvatarListItem(
+                ImageLeftWidget(
+                    source="image_{}.png".format(timenow),
+                    size_hint_x=0.3,
+                    size_hint_y=1,
+                    size=(300, 300)
+
+                ),
+                text=self.ids.name.text
+            )
+
+        )
+
+class MyApp(MDApp):
     def build(self):
-        Builder.load_file("./camera.kv")
-        return CameraClick()
+        Builder.load_file("camera.kv")
+        return Homescreen()
 
 
-if __name__ == '__main__':
-    TestCamera().run()
+if __name__ == "__main__":
+    MyApp().run()
